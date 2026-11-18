@@ -1,5 +1,6 @@
 local repo = assert(vim.env.DOTFILES_REPO, "DOTFILES_REPO is required")
 vim.opt.rtp:prepend(repo .. "/.config/nvim")
+require("config.debug-env").setup()
 local failures = 0
 local function check(label, ok, hint)
   print((ok and "PASS: " or "FAIL: ") .. label .. (not ok and hint and (" — " .. hint) or ""))
@@ -18,6 +19,12 @@ for _, tool in ipairs({ "git", "go", "node", "npm", "python3", "rg", "fd", "lazy
   check(tool .. " executable", vim.fn.executable(tool) == 1, "run sh bootstrap.sh")
 end
 check("Go runtime", run({ "go", "version" }))
+check("Java runtime", run({ "java", "-version" }))
+check("Java compiler", run({ "javac", "-version" }))
+check("C compiler", run({ "clang", "--version" }))
+check("C++ compiler", run({ "clang++", "--version" }))
+check("CMake", run({ "cmake", "--version" }))
+check("Maven", run({ "mvn", "--version" }))
 check("Node runtime", run({ "node", "--version" }))
 check("Python virtual environments", run({ "python3", "-c", "import venv, ensurepip" }))
 check("Neovim config link", linked(config .. "/nvim", repo .. "/.config/nvim"), "run sh install.sh")
@@ -54,6 +61,14 @@ check("Go language server runs", run({ mason .. "/bin/gopls", "version" }))
 check("Go linter runs", run({ mason .. "/bin/golangci-lint", "version" }))
 check("Python debug adapter imports", run({ mason .. "/packages/debugpy/venv/bin/python", "-c", "import debugpy" }))
 check("JavaScript debug adapter executable", vim.fn.executable(mason .. "/bin/js-debug-adapter") == 1)
+check("C/C++ debug adapter executable", vim.fn.executable(mason .. "/bin/codelldb") == 1)
+check("Java integration plugin", vim.fn.isdirectory(data .. "/lazy/nvim-jdtls") == 1)
+check("Java debug bundle", #vim.fn.glob(mason .. "/share/java-debug-adapter/*.jar", false, true) > 0)
+local debug_home = data .. "/dotfiles-debug"
+check("TypeScript runner", run({ "node", debug_home .. "/node_modules/tsx/dist/cli.mjs", "--version" }))
+check("Browser launches", run({ "node", "-e",
+  "const {chromium}=require(process.argv[1]);chromium.launch({headless:true}).then(b=>b.close()).catch(()=>process.exit(1))",
+  debug_home .. "/node_modules/playwright" }))
 local ts_ok, ts = pcall(require, "nvim-treesitter")
 check("Treesitter module available", ts_ok)
 if ts_ok then

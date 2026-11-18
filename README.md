@@ -1,5 +1,9 @@
 # Dotfiles
 
+For language-specific launch profiles and debugger shortcuts, see
+[Debugging](docs/debugging.md). Bootstrap provisions Python, C/C++, Go, Java,
+JavaScript/TypeScript, and Chromium-based React debugging tools.
+
 Shared configuration for macOS and Linux. Keep this repository at `~/dotfiles`;
 the installer symlinks explicitly managed settings into your home directory.
 Existing settings are backed up, not deleted. No sudo is needed.
@@ -55,7 +59,7 @@ optional warning; use `gh auth login` through the official flow if needed.
 
 **Still device/project-specific:** GitHub SSH access, other credentials,
 Hammerspoon/Karabiner GUI installation and macOS permissions, terminal font
-selection, browser installation for browser debugging, and project dependencies
+selection, Linux browser system libraries when missing, and project dependencies
 (`go mod download`, `npm install`, Python virtual environments). Doctor does not
 claim to test those or run live debug sessions. Projects must also provide a
 golangci-lint configuration compatible with the installed version.

@@ -63,6 +63,7 @@ class SetupTests(unittest.TestCase):
         log = self.home / "commands.log"
         commands = {
             "brew": 'echo "brew $*" >> "$TEST_LOG"\nexit 0\n',
+            "npm": 'echo "npm $*" >> "$TEST_LOG"\nexit 7\n',
             "nvim": 'echo "nvim $*" >> "$TEST_LOG"\nexit 7\n',
         }
         for name, body in commands.items():
@@ -75,7 +76,7 @@ class SetupTests(unittest.TestCase):
         self.assertEqual(result.returncode, 7, result.stdout + result.stderr)
         recorded = log.read_text()
         self.assertIn("brew bundle --file=", recorded)
-        self.assertIn("nvim-setup.lua", recorded)
+        self.assertIn("npm install", recorded)
         self.assertNotIn("nvim-doctor.lua", recorded)
 
     @unittest.skipUnless(shutil.which("nvim"), "Neovim not installed")
