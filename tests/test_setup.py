@@ -28,7 +28,7 @@ class SetupTests(unittest.TestCase):
                               text=True, capture_output=True, timeout=90)
 
     def test_shell_syntax(self):
-        for script in ("install.sh", "bootstrap.sh", "doctor.sh"):
+        for script in ("install.sh", "bootstrap.sh", "doctor.sh", "dotfiles.sh"):
             result = subprocess.run(["sh", "-n", str(REPO / script)], capture_output=True)
             self.assertEqual(result.returncode, 0, result.stderr)
 
@@ -53,9 +53,51 @@ class SetupTests(unittest.TestCase):
         self.assertEqual(len(backups), 1)
         self.assertEqual(backups[0].read_text(), "keep me")
 
+    def test_cli_and_shell_setup_are_idempotent(self):
+        rc = self.home / ".zshrc"
+        rc.write_text("# existing settings\n")
+        for _ in range(2):
+            result = self.run_script("install.sh")
+            self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(rc.read_text().count("# dotfiles CLI"), 1)
+        self.assertTrue(rc.read_text().startswith("# existing settings\n"))
+        backups = list(self.state.glob("dotfiles/backups/*/shell/.zshrc"))
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(backups[0].read_text(), "# existing settings\n")
+        cli = self.home / ".local/bin/dotfiles"
+        result = subprocess.run([str(cli), "help"], cwd=self.home, env=self.env,
+                                text=True, capture_output=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Usage: dotfiles", result.stdout)
+
     def test_invalid_arguments_fail(self):
         for script in ("install.sh", "bootstrap.sh", "doctor.sh"):
             self.assertEqual(self.run_script(script, "--invalid").returncode, 2)
+
+    def test_dotfiles_command_validation(self):
+        for args in (("--invalid",), ("push",), ("push", ""), ("test", "extra")):
+            self.assertEqual(self.run_script("dotfiles.sh", *args).returncode, 2)
+        self.assertEqual(self.run_script("dotfiles.sh", "help").returncode, 0)
+
+    def test_push_stops_before_git_mutation_when_tests_fail(self):
+        bin_dir = self.home / "bin"
+        bin_dir.mkdir()
+        log = self.home / "commands.log"
+        for name, body in {
+            "python3": "exit 7\n",
+            "git": 'echo "$*" >> "$TEST_LOG"\nexit 0\n',
+        }.items():
+            path = bin_dir / name
+            path.write_text("#!/bin/sh\n" + body)
+            path.chmod(0o755)
+        self.env["PATH"] = str(bin_dir) + os.pathsep + self.env["PATH"]
+        self.env["TEST_LOG"] = str(log)
+        result = self.run_script("dotfiles.sh", "push", "test")
+        self.assertEqual(result.returncode, 7)
+        self.assertEqual(log.read_text().splitlines(), [
+            "diff --stat HEAD", "ls-files --others --exclude-standard",
+            "diff --check", "diff --cached --check",
+        ])
 
     def test_bootstrap_stops_on_provisioning_failure(self):
         bin_dir = self.home / "bin"

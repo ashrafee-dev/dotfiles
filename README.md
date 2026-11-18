@@ -1,5 +1,40 @@
 # Dotfiles
 
+## One-command workflow
+
+After cloning to `~/dotfiles` and installing Homebrew:
+
+```sh
+sh ~/dotfiles/dotfiles.sh install
+```
+
+This installs the `dotfiles` command in `~/.local/bin` and sets up PATH for
+Zsh, Bash, and Fish. Open a new terminal afterward. Shell customizations are
+preserved and backed up before editing.
+
+Pull the latest committed configuration and provision this machine:
+
+```sh
+dotfiles update
+```
+
+Publish your local tracked configuration edits (repository tests must pass
+before committing or pushing):
+
+```sh
+dotfiles push "Fix Go debugging"
+```
+
+`push` includes all tracked edits and already-staged new files. For a new file,
+use `git -C ~/dotfiles add path/to/file` first. It never force-pushes.
+`update` requires a clean working tree and uses a fast-forward pull.
+Restart affected applications after updating.
+
+Use `dotfiles test` for repository regression tests, `dotfiles check` for
+installed-environment checks, and `dotfiles status` to inspect local changes.
+Installation and updates run both test suites and environment checks.
+GitHub Actions also runs repository tests on Linux and macOS for pushes and PRs.
+
 For language-specific launch profiles and debugger shortcuts, see
 [Debugging](docs/debugging.md). Bootstrap provisions Python, C/C++, Go, Java,
 JavaScript/TypeScript, and Chromium-based React debugging tools.

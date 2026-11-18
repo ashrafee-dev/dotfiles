@@ -41,6 +41,13 @@ require **Fn + F5**, etc.
 | Debug test | Launch a test debug session targeting the current test file. Open a `_test.go` file first. |
 | Debug test (go.mod) | Launch tests for the current file's package using a path relative to the project/module working directory. Start Neovim from the directory containing `go.mod`. |
 
+For a focused test, place the cursor inside a `Test...` function in a `_test.go`
+file and press `<leader>dgn`. After that first launch, `<leader>dgl` reruns the
+same test from any Go source file. Test discovery is intentionally scoped to the
+current test buffer; invoking "nearest test" from an implementation file reports
+`no test found`. Both actions resolve the nearest `go.mod` or `go.work`
+automatically, so Neovim may be started from a repository above a nested module.
+
 Choose by **label**, not menu number: numbers can change. If the same seven
 options appear twice, they are duplicate registrations, not different modes.
 Either matching entry has the same purpose; report/fix the duplicate setup

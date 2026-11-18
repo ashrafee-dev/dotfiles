@@ -33,6 +33,21 @@ link() {
 }
 
 link "$repo/.config/nvim" "$config/nvim" config/nvim
+if ! "$dry_run"; then chmod +x "$repo/dotfiles.sh"; fi
+link "$repo/dotfiles.sh" "$HOME/.local/bin/dotfiles" bin/dotfiles
+# Add only an idempotent PATH line; preserve existing shell customizations.
+path_line='case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac # dotfiles CLI'
+for rc in .zshrc .bashrc; do
+  target="$HOME/$rc"
+  if [ -f "$target" ] && grep -Fqx "$path_line" "$target"; then continue; fi
+  printf 'Add dotfiles CLI to PATH in %s\n' "$target"
+  if "$dry_run"; then continue; fi
+  if [ -e "$target" ]; then
+    mkdir -p "$backup/shell"
+    cp -p "$target" "$backup/shell/$rc"
+  fi
+  printf '\n%s\n' "$path_line" >> "$target"
+done
 link "$repo/.config/gh/config.yml" "$config/gh/config.yml" config/gh/config.yml
 for file in "$repo"/.config/fish/conf.d/*.fish; do
   name=$(basename "$file")

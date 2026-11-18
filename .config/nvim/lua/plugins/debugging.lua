@@ -3,7 +3,12 @@ return {
   dependencies = {
     "rcarriga/nvim-dap-ui",
     "nvim-neotest/nvim-nio",
-    "leoluz/nvim-dap-go",
+    {
+      "leoluz/nvim-dap-go",
+      opts = {
+        tests = { verbose = true },
+      },
+    },
     "mfussenegger/nvim-dap-python",
   },
   config = function()
@@ -12,12 +17,27 @@ return {
 
     dapui.setup()
 
-    require("dap-go").setup()
     local mason = vim.fn.stdpath("data") .. "/mason"
     require("dap-python").setup(mason .. "/packages/debugpy/venv/bin/python")
     local debug_home = vim.fn.stdpath("data") .. "/dotfiles-debug"
     local function root()
-      return vim.fs.root(0, { "package.json", "go.mod", "pom.xml", "CMakeLists.txt", ".git" }) or vim.fn.getcwd()
+      local markers = {
+        go = { "go.mod", "go.work", ".git" },
+        javascript = { "package.json", ".git" },
+        javascriptreact = { "package.json", ".git" },
+        typescript = { "package.json", ".git" },
+        typescriptreact = { "package.json", ".git" },
+        java = { "pom.xml", "build.gradle", "build.gradle.kts", ".git" },
+        c = { "CMakeLists.txt", ".git" },
+        cpp = { "CMakeLists.txt", ".git" },
+      }
+      return vim.fs.root(0, markers[vim.bo.filetype] or { ".git" }) or vim.fn.getcwd()
+    end
+    -- Delve otherwise inherits Neovim's working directory. That fails for
+    -- repositories containing nested Go modules, even when the open file is
+    -- inside a valid module.
+    for _, config in ipairs(dap.configurations.go or {}) do
+      config.cwd = root
     end
     dap.adapters.codelldb = {
       type = "server", port = "${port}",
@@ -147,6 +167,35 @@ return {
     vim.keymap.set("n", "<leader>dl", dap.run_last, { desc = "DAP: Run last" })
     vim.keymap.set("n", "<leader>dt", dap.terminate, { desc = "DAP: Terminate" })
     vim.keymap.set("n", "<leader>dc", dap.continue, { desc = "DAP: Continue" })
+    local last_go_test
+    vim.keymap.set("n", "<leader>dgn", function()
+      local dap_go = require("dap-go")
+      local package_dir = vim.fs.dirname(vim.api.nvim_buf_get_name(0))
+      local config = {
+        cwd = root(),
+        program = package_dir,
+      }
+      if dap_go.debug_test(config) then
+        last_go_test = {
+          type = "go",
+          request = "launch",
+          mode = "test",
+          name = dap_go.last_testname,
+          program = package_dir,
+          cwd = config.cwd,
+          args = { "-test.run", "^" .. dap_go.last_testname .. "$", "-test.v" },
+          buildFlags = dap_go.test_buildflags,
+          outputMode = "remote",
+        }
+      end
+    end, { desc = "DAP: Debug nearest Go test" })
+    vim.keymap.set("n", "<leader>dgl", function()
+      if not last_go_test then
+        vim.notify("No Go test has been debugged in this session", vim.log.levels.WARN)
+        return
+      end
+      dap.run(vim.deepcopy(last_go_test))
+    end, { desc = "DAP: Debug last Go test" })
 
     vim.keymap.set("n", "<leader>dw", function()
       require("dapui").elements.watches.add()
