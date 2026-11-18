@@ -40,3 +40,16 @@ luac.out
 *.hex
 #Mac OS 
 .DS_Store
+
+# Dependencies, credentials, generated state, and device-local overrides
+node_modules/
+*.log
+.env
+.env.*
+!.env.example
+**/hosts.yml
+**/anapi.txt
+**/automatic_backups/
+**/lua/dotfiles/
+*.local
+*.local.*
