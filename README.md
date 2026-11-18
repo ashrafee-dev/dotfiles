@@ -2,15 +2,33 @@
 
 ## One-command workflow
 
-After cloning to `~/dotfiles` and installing Homebrew:
+Install Git, configure GitHub SSH access, and install Homebrew from
+<https://brew.sh> (including its compiler prerequisites). Then:
 
 ```sh
+git clone git@github.com:ashrafee-dev/dotfiles.git ~/dotfiles
 sh ~/dotfiles/dotfiles.sh install
 ```
 
 This installs the `dotfiles` command in `~/.local/bin` and sets up PATH for
 Zsh, Bash, and Fish. Open a new terminal afterward. Shell customizations are
 preserved and backed up before editing.
+
+No manual PATH edits are needed. The installer verifies the command using its
+full path; an installer cannot modify the environment of its parent terminal.
+To use it immediately in the same terminal, without restarting or sourcing shell
+configuration, run:
+
+```sh
+"$HOME/.local/bin/dotfiles" check
+```
+
+If upgrading an older clone where `dotfiles` does not exist yet:
+
+```sh
+git -C ~/dotfiles pull --ff-only
+sh ~/dotfiles/dotfiles.sh install
+```
 
 Pull the latest committed configuration and provision this machine:
 
@@ -45,10 +63,10 @@ Existing settings are backed up, not deleted. No sudo is needed.
 
 ## First setup on each device
 
-Install Git and configure GitHub SSH access, then:
+Use the **One-command workflow** above for a complete development setup.
+For configuration links only (no tools installed), use:
 
 ```sh
-git clone git@github.com:ashrafee-dev/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 sh install.sh --dry-run
 sh install.sh

@@ -18,6 +18,7 @@ class SetupTests(unittest.TestCase):
         self.config = self.home / "config"
         self.state = self.home / "state"
         self.env = dict(os.environ, HOME=str(self.home),
+                        ZDOTDIR=str(self.home),
                         XDG_CONFIG_HOME=str(self.config),
                         XDG_STATE_HOME=str(self.state),
                         XDG_DATA_HOME=str(self.home / "data"),
@@ -78,6 +79,35 @@ class SetupTests(unittest.TestCase):
         for args in (("--invalid",), ("push",), ("push", ""), ("test", "extra")):
             self.assertEqual(self.run_script("dotfiles.sh", *args).returncode, 2)
         self.assertEqual(self.run_script("dotfiles.sh", "help").returncode, 0)
+
+    def test_fresh_shell_discovers_command_without_existing_local_path(self):
+        result = self.run_script("install.sh")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Verified:", result.stdout)
+        env = dict(self.env, PATH="/usr/bin:/bin")
+        shells = []
+        if shutil.which("zsh"):
+            shells.append([shutil.which("zsh"), "-ic", "command -v dotfiles"])
+        if shutil.which("bash"):
+            shells.append([shutil.which("bash"), "--noprofile", "--rcfile",
+                           str(self.home / ".bashrc"), "-ic", "command -v dotfiles"])
+        for command in shells:
+            result = subprocess.run(command, env=env, text=True, capture_output=True, timeout=10)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(str(self.home / ".local/bin/dotfiles"), result.stdout)
+
+    def test_login_profile_and_custom_zdotdir_are_preserved(self):
+        profile = self.home / ".bash_login"
+        profile.write_text("# keep login settings\n")
+        self.env["ZDOTDIR"] = str(self.home / "zsh-config")
+        for _ in range(2):
+            result = self.run_script("install.sh")
+            self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse((self.home / ".bash_profile").exists())
+        self.assertFalse((self.home / ".profile").exists())
+        self.assertTrue(profile.read_text().startswith("# keep login settings\n"))
+        self.assertEqual(profile.read_text().count("# dotfiles CLI"), 1)
+        self.assertEqual((self.home / "zsh-config/.zshrc").read_text().count("# dotfiles CLI"), 1)
 
     def test_push_stops_before_git_mutation_when_tests_fail(self):
         bin_dir = self.home / "bin"

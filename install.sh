@@ -37,11 +37,22 @@ if ! "$dry_run"; then chmod +x "$repo/dotfiles.sh"; fi
 link "$repo/dotfiles.sh" "$HOME/.local/bin/dotfiles" bin/dotfiles
 # Add only an idempotent PATH line; preserve existing shell customizations.
 path_line='case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac # dotfiles CLI'
-for rc in .zshrc .bashrc; do
-  target="$HOME/$rc"
+# Bash login shells read the first existing profile. Do not create a new
+# .bash_profile that would hide an existing .profile or .bash_login.
+bash_profile=.profile
+for candidate in .bash_profile .bash_login .profile; do
+  if [ -f "$HOME/$candidate" ]; then bash_profile=$candidate; break; fi
+done
+for rc in .zshrc .bashrc "$bash_profile"; do
+  if [ "$rc" = .zshrc ]; then
+    target="${ZDOTDIR:-$HOME}/.zshrc"
+  else
+    target="$HOME/$rc"
+  fi
   if [ -f "$target" ] && grep -Fqx "$path_line" "$target"; then continue; fi
   printf 'Add dotfiles CLI to PATH in %s\n' "$target"
   if "$dry_run"; then continue; fi
+  mkdir -p "$(dirname "$target")"
   if [ -e "$target" ]; then
     mkdir -p "$backup/shell"
     cp -p "$target" "$backup/shell/$rc"
@@ -60,3 +71,10 @@ if [ "$(uname -s)" = Darwin ]; then
 fi
 
 printf 'Configs linked. For development tools: sh bootstrap.sh. To check readiness: sh doctor.sh.\n'
+if ! "$dry_run"; then
+  "$HOME/.local/bin/dotfiles" help >/dev/null
+  printf '\nVerified: %s\n' "$HOME/.local/bin/dotfiles"
+  printf 'New terminals can use: dotfiles update\n'
+  printf 'In this terminal, use the full path (no PATH changes needed):\n  "%s" check\n' "$HOME/.local/bin/dotfiles"
+  printf 'The installer cannot change the PATH of its parent terminal.\n'
+fi
