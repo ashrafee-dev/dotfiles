@@ -1,0 +1,12 @@
+# Homebrew works on macOS and Linux. GUI applications remain optional.
+brew "git"
+brew "neovim"
+brew "go"
+brew "node"
+brew "python"
+brew "ripgrep"
+brew "fd"
+brew "lazygit"
+brew "gh"
+brew "fish"
+brew "tree-sitter-cli"

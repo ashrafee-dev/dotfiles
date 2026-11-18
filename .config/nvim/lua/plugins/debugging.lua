@@ -5,7 +5,6 @@ return {
     "nvim-neotest/nvim-nio",
     "leoluz/nvim-dap-go",
     "mfussenegger/nvim-dap-python",
-    "mxsdev/nvim-dap-vscode-js",
   },
   config = function()
     local dap = require("dap")
@@ -14,17 +13,20 @@ return {
     dapui.setup()
 
     require("dap-go").setup()
-    require("dap-python").setup("python3")
+    local mason = vim.fn.stdpath("data") .. "/mason"
+    require("dap-python").setup(mason .. "/packages/debugpy/venv/bin/python")
 
-    require("dap-vscode-js").setup({
-      debugger_path = vim.fn.stdpath("data") .. "/lazy/vscode-js-debug",
-      adapters = {
-        "pwa-node",
-        "pwa-chrome",
-        "pwa-msedge",
-        "node-terminal",
-      },
-    })
+    for _, adapter in ipairs({ "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal" }) do
+      dap.adapters[adapter] = {
+        type = "server",
+        host = "127.0.0.1",
+        port = "${port}",
+        executable = {
+          command = mason .. "/bin/js-debug-adapter",
+          args = { "${port}", "127.0.0.1" },
+        },
+      }
+    end
 
     for _, language in ipairs({ "javascript", "typescript", "javascriptreact", "typescriptreact" }) do
       dap.configurations[language] = {

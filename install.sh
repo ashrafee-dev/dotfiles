@@ -44,4 +44,4 @@ if [ "$(uname -s)" = Darwin ]; then
   link "$repo/.hammerspoon/init.lua" "$HOME/.hammerspoon/init.lua" hammerspoon/init.lua
 fi
 
-printf 'Done. Install applications and authenticate separately; see README.md.\n'
+printf 'Configs linked. For development tools: sh bootstrap.sh. To check readiness: sh doctor.sh.\n'

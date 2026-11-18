@@ -15,6 +15,8 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
+  -- Provisioning uses a private copy so setup never rewrites committed pins.
+  lockfile = vim.g.dotfiles_lockfile or (vim.fn.stdpath("config") .. "/lazy-lock.json"),
   spec = {
     -- add LazyVim and import its plugins
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
