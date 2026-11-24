@@ -1,14 +1,7 @@
 return {
   "folke/snacks.nvim",
   keys = {
-    {
-      "<leader>uz",
-      function()
-        vim.g.auto_center_mode = not (Snacks.zen.win and Snacks.zen.win:valid())
-        Snacks.zen()
-      end,
-      desc = "Toggle Center Mode",
-    },
+    { "<leader>uz", false },
   },
   opts = {
     zen = {

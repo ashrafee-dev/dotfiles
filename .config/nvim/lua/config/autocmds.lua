@@ -8,7 +8,6 @@
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 
 -- Center a lone editor automatically, while leaving sidebars and splits usable.
-vim.g.auto_center_mode = true
 local center_pending = false
 local function auto_center()
   if center_pending then
@@ -17,7 +16,7 @@ local function auto_center()
   center_pending = true
   vim.schedule(function()
     center_pending = false
-    if not vim.g.auto_center_mode or not Snacks or vim.v.exiting ~= vim.NIL then
+    if not Snacks or vim.v.exiting ~= vim.NIL then
       return
     end
     if Snacks.zen.win and Snacks.zen.win:valid() then
