@@ -14,13 +14,13 @@ local function resize_zen(delta)
   if not (win and win:valid()) then
     return
   end
-  vim.g.zen_width = math.max(60, math.min(vim.o.columns - 2, (vim.g.zen_width or 150) + delta))
+  vim.g.zen_width_percent = math.max(40, math.min(95, (vim.g.zen_width_percent or 60) + delta))
   win:update()
 end
 
 vim.keymap.set("n", "<leader>u-", function()
-  resize_zen(-10)
+  resize_zen(-5)
 end, { desc = "Narrow Zen Window" })
 vim.keymap.set("n", "<leader>u=", function()
-  resize_zen(10)
+  resize_zen(5)
 end, { desc = "Widen Zen Window" })

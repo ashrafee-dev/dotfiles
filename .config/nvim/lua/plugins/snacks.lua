@@ -14,7 +14,7 @@ return {
       },
       win = {
         width = function()
-          return vim.g.zen_width or 150
+          return math.floor(vim.o.columns * (vim.g.zen_width_percent or 60) / 100)
         end,
         height = 0, -- Full height; only add horizontal margins.
       },
