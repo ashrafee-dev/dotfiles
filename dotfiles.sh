@@ -15,7 +15,7 @@ cd "$repo"
 command=${1:-help}
 if [ "$#" -gt 0 ]; then shift; fi
 usage() {
-  echo 'Usage: dotfiles install|update|test|check|status'
+  echo 'Usage: dotfiles setup|update|test|check|status'
   echo '       dotfiles push "Commit message"'
 }
 test_repo() {
@@ -25,7 +25,7 @@ test_repo() {
   DOTFILES_REPO="$repo" nvim --clean --headless -l tests/debug-config.lua
 }
 case "$command" in
-  install|update|test|check|status)
+  setup|update|test|check|status)
     if [ "$#" -ne 0 ]; then usage >&2; exit 2; fi ;;
   push)
     if [ "$#" -ne 1 ] || [ -z "$1" ]; then usage >&2; exit 2; fi ;;
@@ -35,7 +35,7 @@ case "$command" in
     usage >&2; exit 2 ;;
 esac
 case "$command" in
-  install)
+  setup)
     sh "$repo/bootstrap.sh"
     test_repo ;;
   update)

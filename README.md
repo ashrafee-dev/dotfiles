@@ -7,7 +7,7 @@ Install Git, configure GitHub SSH access, and install Homebrew from
 
 ```sh
 git clone git@github.com:ashrafee-dev/dotfiles.git ~/dotfiles
-sh ~/dotfiles/dotfiles.sh install
+sh ~/dotfiles/dotfiles.sh setup
 ```
 
 This installs the `dotfiles` command in `~/.local/bin` and sets up PATH for
@@ -27,7 +27,7 @@ If upgrading an older clone where `dotfiles` does not exist yet:
 
 ```sh
 git -C ~/dotfiles pull --ff-only
-sh ~/dotfiles/dotfiles.sh install
+sh ~/dotfiles/dotfiles.sh setup
 ```
 
 Pull the latest committed configuration and provision this machine:
