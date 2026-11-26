@@ -16,7 +16,7 @@ local function auto_center()
   center_pending = true
   vim.schedule(function()
     center_pending = false
-    if not Snacks or vim.v.exiting ~= vim.NIL then
+    if vim.g.auto_center_disabled or not Snacks or vim.v.exiting ~= vim.NIL then
       return
     end
     if Snacks.zen.win and Snacks.zen.win:valid() then

@@ -1,8 +1,5 @@
 return {
   "folke/snacks.nvim",
-  keys = {
-    { "<leader>uz", false },
-  },
   opts = {
     zen = {
       center = false, -- Preserve vertical scroll position instead of centering the cursor.
