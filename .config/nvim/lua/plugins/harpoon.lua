@@ -24,7 +24,7 @@ return {
           desc = "Harpoon Menu",
         },
       }
-      for i = 1, 5 do
+      for i = 1, 9 do
         keys[#keys + 1] = {
           "<leader>" .. i,
           function()
