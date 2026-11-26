@@ -13,7 +13,9 @@ return {
         tabline = true,
       },
       win = {
-        width = 100,
+        width = function()
+          return vim.g.zen_width or 150
+        end,
         height = 0, -- Full height; only add horizontal margins.
       },
     },
