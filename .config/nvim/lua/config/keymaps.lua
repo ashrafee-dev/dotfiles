@@ -4,7 +4,7 @@
 vim.keymap.set("n", "<leader>dd", '"_dd')
 
 vim.keymap.set("n", "<leader>uz", function()
-  -- Once manually toggled, leave layout control to the user for this session.
-  vim.g.auto_center_disabled = true
+  -- Remember the chosen layout when sidebars temporarily interrupt Zen mode.
+  vim.g.auto_center_disabled = Snacks.zen.win ~= nil and Snacks.zen.win:valid()
   Snacks.zen()
 end, { desc = "Toggle Zen Mode" })
